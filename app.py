@@ -5,25 +5,24 @@ from flask_cors import CORS
 from datetime import datetime
 from dotenv import load_dotenv
 
-# 1. Load the .env file
+
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# 2. Config from Environment Variables
-TMDB_API_KEY = os.getenv("TMDB_API_KEY", "0c47217bbf65aa2dcc3cf53dffded77f")
+
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 ANILIST_URL = "https://graphql.anilist.co"
 TMDB_URL = "https://api.themoviedb.org/3"
 
 def run_query(query, variables=None):
     try:
-        response = requests.post(ANILIST_URL, json={'query': query, 'variables': variables})
+        response = requests.post(ANILIST_URL, json={'query': query, 'variables': variables}, timeout=10)
         return response.json()
     except Exception as e:
         return {"error": str(e)}
 
-# --- THE MASTER DATA FRAGMENT (No feature left behind) ---
 FULL_DATA = '''
     id idMal title { english romaji native }
     coverImage { extraLarge large }
@@ -47,7 +46,11 @@ FULL_DATA = '''
 
 @app.route('/')
 def home():
-    return jsonify({"status": "Active", "info": "ANIHUB Full Data Engine"})
+    return jsonify({
+        "status": "Online",
+        "secure": True,
+        "key_detected": bool(TMDB_API_KEY)
+    })
 
 @app.route('/api/trending')
 def get_trending():
@@ -56,7 +59,6 @@ def get_trending():
 
 @app.route('/api/this-season')
 def get_seasonal():
-    # Spring 2026 logic
     query = f'query {{ Page(perPage: 25) {{ media(type: ANIME, season: SPRING, seasonYear: 2026, sort: POPULARITY_DESC) {{ {FULL_DATA} }} }} }}'
     return jsonify(run_query(query))
 
@@ -83,6 +85,7 @@ def get_recent():
 @app.route('/api/search')
 def search_anime():
     q = request.args.get('q')
+    if not q: return jsonify({"error": "Query required"}), 400
     query = f'''query ($s: String) {{ Page(perPage: 20) {{ media(search: $s, type: ANIME) {{ {FULL_DATA} }} }} }}'''
     return jsonify(run_query(query, {'s': q}))
 
@@ -109,6 +112,8 @@ def get_schedule():
 
 @app.route('/api/metadata')
 def get_tmdb_metadata():
+    if not TMDB_API_KEY:
+        return jsonify({"error": "TMDB API Key missing"}), 500
     title = request.args.get('title')
     params = {'api_key': TMDB_API_KEY, 'query': title}
     res = requests.get(f"{TMDB_URL}/search/tv", params=params)

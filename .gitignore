@@ -1,0 +1,15 @@
+# Sensitive keys
+.env
+
+# Python environment
+.venv/
+__pycache__/
+*.pyc
+
+# Distribution / Build
+dist/
+build/
+*.egg-info/
+
+# Deployment
+.vercel

@@ -101,11 +101,12 @@ def get_schedule():
     query = '''
     query ($start: Int, $end: Int) {
       Page(perPage: 50) {
-        airingSchedules(airingAt_greater: $start, airingAt_lesser: $end, sort: START_TIME) {
-          airingAt episode
+        airingSchedules(airingAt_greater: $start, airingAt_lesser: $end, sort: TIME) {
+          airingAt 
+          episode
           media { 
             id 
-            title { english romaji } 
+            title { english romaji native } 
             coverImage { large } 
           }
         }

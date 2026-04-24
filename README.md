@@ -30,9 +30,9 @@ ANIHUB is a robust backend engine built with **Python (Flask)** and deployed on 
 
 ---
 
-## 🔌 How to Use This API in Other Projects
+## 🔌 How to Use This API in Your Project
 
-Integrating ANIHUB into your other apps (like your Discord bots or music streaming sites) is simple.
+Integrating ANIHUB into your other apps is simple.
 
 ### 1. JavaScript (Frontend / Node.js)
 ```javascript
